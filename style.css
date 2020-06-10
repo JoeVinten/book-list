@@ -1,0 +1,14 @@
+* {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+button[type='submit'] {
+  margin-top: 15%;
+}
+
+.add-book {
+  margin-bottom: 2rem;
+}
+.form {
+  margin-top: 1rem;
+}
