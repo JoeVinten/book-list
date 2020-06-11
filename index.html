@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Library</title>
+
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
     <!-- Compiled and minified CSS -->
@@ -66,6 +67,27 @@
       <div class="books-container row"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.0/firebase-firestore.js"></script>
+
+    <script>
+      // Your web app's Firebase configuration
+      var firebaseConfig = {
+        apiKey: 'AIzaSyD3pDyartBkM4HmdrO58rr8r-b7U6AAj-U',
+        authDomain: 'book-library-95121.firebaseapp.com',
+        databaseURL: 'https://book-library-95121.firebaseio.com',
+        projectId: 'book-library-95121',
+        storageBucket: 'book-library-95121.appspot.com',
+        messagingSenderId: '273673568538',
+        appId: '1:273673568538:web:a251796539f44552472ca3',
+        measurementId: 'G-MD2SBVZ360',
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+    </script>
 
     <script src="index.js"></script>
   </body>

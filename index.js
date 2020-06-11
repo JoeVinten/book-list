@@ -2,33 +2,47 @@ const booksContainer = document.querySelector('.books-container');
 const addBookBtn = document.querySelector('.btn-add');
 const removeFormBtn = document.querySelector('.btn-remove');
 const form = document.querySelector('.form');
+const myLibrary = db.collection('books');
 
-let myLibrary = [
-  {
-    author: 'J.K.Rowling',
-    title: 'Harry Potter and the Chamber of Secrets',
-    pages: 400,
-    read: true,
-    image: 'https://img.srgcdn.com/e//alJUYzQzUG1ER09mNHlwSTExMDMuanBn.jpg',
-    id: 0,
-  },
-  {
-    author: 'J.K.Rowling',
-    title: 'Harry Potter',
-    pages: 400,
-    read: true,
-    image: 'https://img.srgcdn.com/e//alJUYzQzUG1ER09mNHlwSTExMDMuanBn.jpg',
-    id: 1,
-  },
-  {
-    author: 'J.K.Rowling',
-    title: 'Harry Potter',
-    pages: 400,
-    read: false,
-    image: 'https://img.srgcdn.com/e//alJUYzQzUG1ER09mNHlwSTExMDMuanBn.jpg',
-    id: 2,
-  },
-];
+// Writes data to the database
+
+const addBookToLibrary = (book) => {
+  myLibrary
+    .add({
+      author: book.author,
+      title: book.title,
+      pages: book.pages,
+      read: book.read,
+      image: book.image,
+    })
+    .then((docRef) => {
+      console.log('Document written with ID: ', docRef.id);
+      getRenderData();
+    })
+    .catch((error) => {
+      console.log('Error adding document: ', error);
+    });
+};
+
+/*
+ DB QUERIES
+*/
+// Gets inital data from the DB and envokes render
+
+const getRenderData = () => {
+  myLibrary
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        render(doc.data(), doc.id);
+      });
+    })
+    .catch((error) => {
+      console.log('Error getting documents: ', error);
+    });
+};
+
+// Constructor which creates the book
 
 function Book(author, title, pages, read, image) {
   this.author = author;
@@ -39,39 +53,38 @@ function Book(author, title, pages, read, image) {
   this.id = myLibrary.length + 1;
 }
 
-const addBookToLibrary = (book) => {
-  myLibrary.push(book);
-  let item = [book];
-  render(item);
-};
-
-const render = (library) => {
-  library.forEach((element) => {
-    booksContainer.innerHTML += `
-      <div class="col s12 m6" data-id="${element.id}">
+// renders data from a source (in this case the firebase db)
+const render = (library, id) => {
+  booksContainer.innerHTML += `
+        <div class="col s12 m6" data-id="${id}">
         <div class="card">
           <div class="card-image">
-            <img src="${element.image}">
-            <span class="card-title">${element.title}</span>
+            <img src="${library.image}">
+            <span class="card-title">${library.title}</span>
             <a class="btn-delete btn-floating halfway-fab waves-effect waves-light red"><i class="material-icons">delete</i></a>
 
           </div>
           <div class="card-content">
             <ul>
-              <li>Written by ${element.author}</li>
-              <li>${element.pages} pages long</li>
-              <li>${element.read ? 'Read' : 'Not Read'}</li>
+              <li>Written by ${library.author}</li>
+              <li>${library.pages} pages long</li>
             </ul>
+          </div>
+          <div class="card-action">
+              <p>
+                <label for="card-read-${id}">
+                  <input class="read-toggle" type="checkbox" id="card-read-${id}" name="card-read-${id}"
+                  ${library.read ? 'checked' : null}/>
+                  <span>Read</span>
+                </label>
+              </p>
           </div>
         </div>
       </div>
 
-`;
-  });
+  `;
 };
-
-// Renders all the books in the array on load (will changed once I implement firebase)
-document.addEventListener('load', render(myLibrary));
+booksContainer.addEventListener('load', getRenderData());
 
 // Handles the button clicks
 const openForm = () => {
@@ -86,7 +99,40 @@ const hideForm = () => {
   addBookBtn.classList.remove('hide');
 };
 
-const deleteBookBtn = document.querySelectorAll('.btn-delete');
+// Handle read toggle state change
+
+// This part isn't working Need to work out how to properly update
+
+booksContainer.addEventListener('click', (event) => {
+  let toggle = event.target.classList.contains('read-toggle');
+  if (toggle) {
+    let bookID = event.target.parentElement.parentElement.parentElement.parentElement.parentElement.dataset.id;
+    let selectedBook = myLibrary.doc(bookID);
+    if (toggle.checked) {
+      return selectedBook
+        .update({
+          read: false,
+        })
+        .then(() => {
+          console.log('Document successfully updated');
+        })
+        .catch((error) => {
+          console.error('Error updating document: ', error);
+        });
+    } else {
+      return selectedBook
+        .update({
+          read: true,
+        })
+        .then(() => {
+          console.log('Document successfully updated');
+        })
+        .catch((error) => {
+          console.error('Error updating document: ', error);
+        });
+    }
+  }
+});
 
 /* 
 Uses the data attribute to find the current id. Using event target to get this.
@@ -95,13 +141,18 @@ Once complete it removes the item from the DOM.
 */
 
 const deleteBook = (event) => {
+  console.log('hello');
   let bookID = event.target.parentElement.parentElement.parentElement.parentElement.dataset.id;
-  myLibrary.forEach((book) => {
-    if (book.id == bookID) {
-      const currentIndex = myLibrary.indexOf(book);
-      myLibrary.splice(currentIndex, 1);
-    }
-  });
+  myLibrary
+    .doc(bookID)
+    .delete()
+    .then(function () {
+      console.log('Document successfully deleted!');
+    })
+    .catch(function (error) {
+      console.error('Error removing document: ', error);
+    });
+
   booksContainer.childNodes.forEach((card) => {
     if (card.tagName == 'DIV') {
       if (card.dataset.id == bookID) {
@@ -113,10 +164,6 @@ const deleteBook = (event) => {
 
 addBookBtn.addEventListener('click', openForm);
 removeFormBtn.addEventListener('click', hideForm);
-
-deleteBookBtn.forEach((btn) => {
-  btn.addEventListener('click', deleteBook);
-});
 
 // handle form submit and create new book object
 form.addEventListener('submit', (event) => {
@@ -131,3 +178,10 @@ form.addEventListener('submit', (event) => {
   form.reset();
   hideForm();
 });
+
+setTimeout(() => {
+  const deleteBookBtn = document.querySelectorAll('.btn-delete');
+  deleteBookBtn.forEach((btn) => {
+    btn.addEventListener('click', deleteBook);
+  });
+}, 2000);
