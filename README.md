@@ -7,10 +7,10 @@
 - Rendering Arrays to the DOM.
 - Utilising ES6 i.e. Arrow functions, forEach.
 - Rendering the latest item rather than the whole array.
+- Firebase added for data persistance.
 
 ### Things to add:
 
-- Firebase to hold the data.
 - Form validation.
 - Option to upload an image file instead of using a link.
 - Accessibility on the form elements.
